@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <title>単語練習アプリ</title>
+</head>
+<style>
+    :root{
+            --bg-color: #ffffff;
+            --text-color: #121212;
+        }
+        @media (prefers-color-scheme: dark){
+            :root{
+                --bg-color: #121212;
+                --text-color: #d2d2d7;
+            }
+        }
+
+
+        footer{
+        /* 🌟 iPhoneのデフォルトフォントを呼び出す世界標準の書き方 */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
+        }
+
+    body,button,input,ul,h1,p,div{
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+        }
+    body{
+        padding-top: calc(40px + env(safe-area-iset-top));
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .card-container{
+        width: 300px;
+        height: 200px;
+        perspective: 1000px;
+    }
+    .card-inner{
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+    }
+    .card-inner.isFlipped{
+        transform: rotateY(180deg);
+    }
+    .card-front, .card-back{
+        position: absolute;
+        color: white;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center; 
+        justify-content: center;  
+        text-align: center; 
+        font-size: 37px;
+        font-weight: bold;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    }
+    .card-front{
+        background-color: #0a84ff;
+    }
+    .card-back{
+        background-color: #30d158;
+        transform: rotateY(180deg);
+    }
+
+    input{
+        width: 250px;
+        height: 50px;
+        font-size: 16px;
+        border: #8a8a8a solid 2px;
+        border-radius: 12px;
+        margin-top: 50px;
+        margin-bottom: 20px;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    input:focus{
+        outline: none;
+        border:#0a84ff solid 2px;
+        box-shadow: 0 0 12px rgba(0, 113, 227, 0.5);
+    }
+    button{
+        width: 100px;
+        height: 35px;
+        border: #8a8a8a solid 2px;
+        background-color: #0a84ff;
+        color: white;
+        border-radius: 12px;
+    }
+    @media (hover: hover) {
+            button:hover:not(.selector-btn),button:active:not(.selector-btn){
+            border: 2.5px solid rgb(220, 50, 50);
+            box-shadow: 0 0 12px rgb(220, 50, 50);
+            transform: scale(1.04);
+            opacity: 0.85;
+        }}
+    .deletebutton{
+        width: 60px;
+        height: 30px;
+        border: #8a8a8a solid 2px;
+        background-color: red;
+        font-size: 12px;
+        transform: scale(0.95);
+    }
+    li{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    #resultOverlay{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background-color: rgba(255, 255, 255, 0.2);
+        z-index: 9999;
+        pointer-events: none;
+    }
+    #largeResultMessage{
+        font-size: 80px;
+        font-weight: bold;
+        text-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+        animation: popIn 0.3s ease-out;
+    }
+    #subResultMessage{
+        font-size: 30px;
+        font-weight: bold;
+        text-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+        animation: popIn 0.3s ease-out;
+    }
+    @keyframes popIn {
+        0% {transform: scale(0.5); opacity: 0;}
+        100%{transform: scale(1); opacity: 1;}
+    }
+    .hidden{
+        display: none !important;
+    }
+    #QuizList{
+        margin-top: 20px;
+        list-style-type: none;
+        padding: 0;
+    }
+    #score-box{
+        margin-left: auto;
+        top: 10px;
+        right: 10px;
+        background-color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        border: 2px solid #28a745;
+        transform: scale(0.8);
+    }
+    .toast{
+        position: fixed;
+            top: -60px; /* 最初は画面の上の外側に隠しておく */
+            left: 50%;
+            transform: translateX(-50%); /* 画面の真ん中に配置 */
+            background-color: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            z-index: 9999;
+            /* 動きの滑らかさを設定（0.3秒かけてフュッと動く） */
+            transition: top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    .toast.show {
+            top: 20px; /* 画面の上から20pxの位置まで下げる */
+        }
+        .pwa-popup{
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+        }
+
+        .pwa-popup p {margin: 0 0 8px 0; font-size: 14px;}
+        .pwa-popup .desc {font-size: 12px; color: #ccc;}
+        .pwa-popup button {background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;}
+        
+        @media (max-width: 767px) {
+            .pwa-popup.show{
+                display: block;
+            }
+        }
+        @media (display-mode: standalone){
+            .pwa-popup{
+                display: none !important;
+            }
+        }
+        @media (apple-mobile-web-app-cpable: yes) {
+            .pwa-popup{
+                display: none !important;
+            }
+        }
+    footer {
+    margin-top: 40px;
+    padding: 20px 0;
+    font-size: 12px;
+    color: #888; /* 目立ちすぎないグレー */
+    text-align: center;
+}
+.mente{
+    color: #ff4d4d;
+    font-weight: bold;
+}
+img{
+            height: 1em;
+            vertical-align: bottom;
+        }
+</style>
+<body>
+    <h1 id="title">単語学習サイト</h1>
+    <div id="score-box">
+        正解数: <span id="score-count">0</span>/ <span id="allQCount">0</span>問
+    </div>
+    <div id="toast-container" class="toast"></div>
+    <div id="Ques">
+        <p>この単語の日本語は何？</p>
+    </div>
+    
+    <div class="card-container" id="myCard">
+        <div class="card-inner">
+            <div class="card-front" id="card-front"></div>
+            <div class="card-back" id="correctAnswer"></div>
+        </div>
+    </div>
+    <input type="text" class="answer" id="myAnswer" placeholder="答えを入力">
+    <button class="anwserBtn" id="answerbutton" onclick="AnswerQ()">決定</button>
+    <div id="resultOverlay" class="hidden">
+        <div id="largeResultMessage"></div>
+        <div id="subResultMessage"></div>
+    </div>
+    
+    <button id="QStart" style="width: 150px;">クイズスタート！</button>
+
+    <div id="addadd">
+        <h3>新しい単語を追加しよう</h3>
+        <input type="text" id="QuizAddEng" placeholder="追加する問題を入力(英語)">
+        <input type="text" id="QuizAddJap" placeholder="追加する問題を入力(日本語、ひらがなで)"><br>
+        
+    </div>
+    <button id="AddQuizBtn">追加</button>
+    <ul id="QuizList"></ul>
+    <div id="pwa-popup" class="pwa-popup">
+        <p><strong>ホーム画面に追加</strong>するとアプリのように使えます。</p>
+        <p class="desc">下の <img src="share.png" alt="共有マーク"> から「ホーム画面に追加」を選んでください。</p>
+        <button id="close-popup">閉じる</button>
+    </div>
+    <footer>
+        ※404というエラーが出てサイトが開けない場合は、<span class="mente">メンテナンス中</span>です。<br>
+        &copy; 2026 Harutim056 All Rights Reserved.
+    </footer>
+
+    <script>
+        const Ques = document.getElementById("Ques");
+        const coreAw = document.getElementById("correctAnswer");
+        const myAw = document.getElementById("myAnswer");
+        const awBtn = document.getElementById("answerbutton");
+        const resuOver = document.getElementById("resultOverlay");
+        const laReMe = document.getElementById("largeResultMessage");
+        const subReMe = document.getElementById("subResultMessage");
+        const QList = document.getElementById("QuizList");
+        const scoreCount = document.getElementById("score-count");
+        const scoreBox = document.getElementById("score-box");
+        const QCount = document.getElementById("allQCount");
+
+        let correctCount = 0;
+        let QuizWord = [];
+        let remainingWord = [];
+        let currentWord = null;
+
+        document.addEventListener("DOMContentLoaded", function(){
+        const popup = document.getElementById("pwa-popup");
+        const closeBtn = document.getElementById("close-popup");
+
+        const isMobile = /iPhone|iPod|Android/i.test(navigator.userAgent);
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if(isMobile && !isStandalone){
+            if(!localStorage.getItem("pwa_popup_closed")){
+                popup.classList.add("show");
+            }
+        }
+
+        closeBtn.addEventListener("click", function(){
+            popup.classList.remove("show");
+            localStorage.setItem("pwa_popup_closed", "true");
+        })
+    })
+
+
+        document.getElementById("AddQuizBtn").addEventListener("click", () => {
+            const NewEng = document.getElementById("QuizAddEng");
+            const NewJap = document.getElementById("QuizAddJap");
+
+            const Eng = NewEng.value.trim();
+            const Jap = NewJap.value.trim();
+
+            if(Eng === ""||Jap === ""){
+                alert("英語か日本語のどちらかが未入力です。");
+                return;
+            }
+            QuizWord.push({
+                english: Eng,
+                japanese: Jap
+            })
+            NewEng.value = "";
+            NewJap.value = "";
+            showNotification("追加しました")
+            saveQWord();
+            displayQList();
+        })
+
+        document.getElementById("QStart").addEventListener("click", () => {
+            remainingWord = [...QuizWord];
+            const card = document.getElementById("myCard");
+            const QSBtn = document.getElementById("QStart");
+            document.getElementById("addadd").classList.add("hidden");
+            document.getElementById("AddQuizBtn").classList.add("hidden");
+            document.getElementById("title").classList.add("hidden");
+            QSBtn.classList.add("hidden")
+            QList.classList.add("hidden");
+            card.classList.remove("hidden");
+            scoreBox.classList.remove("hidden");
+            myAw.classList.remove("hidden");
+            awBtn.classList.remove("hidden");
+            Ques.classList.remove("hidden");
+
+            correctCount = 0;
+            QCount.textContent = QuizWord.length;
+            NextQuestion();
+
+        })
+
+        function NextQuestion() {
+            
+            const card = document.getElementById("myCard");
+            card.classList.remove("isFlipped");
+            setTimeout(() => {
+                if(remainingWord.length === 0){
+                    if(correctCount === QuizWord.length){
+                        showNotification("終了！全問正解！");
+                        displayQList();
+                        return;
+                    }
+                    showNotification("終了！");
+                    displayQList();
+                    return;
+            }
+            const randomIndex = Math.floor(Math.random() * remainingWord.length);
+            currentWord = remainingWord[randomIndex];
+            document.getElementById("card-front").textContent = currentWord.english;
+            coreAw.textContent = currentWord.japanese;
+            remainingWord.splice(randomIndex, 1);
+            console.log("asjpda", remainingWord)
+            myAw.value = "";
+            }, 200);
+            
+        }
+
+
+        function displayQList(){
+            const card = document.getElementById("myCard");
+            const QSBtn = document.getElementById("QStart");
+            document.getElementById("addadd").classList.remove("hidden");
+            document.getElementById("AddQuizBtn").classList.remove("hidden");
+            document.getElementById("title").classList.remove("hidden");
+            QSBtn.classList.remove("hidden");
+            QList.classList.remove("hidden");
+            card.classList.add("hidden");
+            myAw.classList.add("hidden");
+            awBtn.classList.add("hidden");
+            Ques.classList.add("hidden");
+            scoreBox.classList.add("hidden");
+            QList.innerHTML = "";
+            QList.classList.remove("hidden")
+
+            QuizWord.forEach((word, index) => {
+                const li = document.createElement("li");
+                
+                li.textContent = `${index + 1}. ${word.english}`;
+                li.setAttribute("data-index", index);
+                const dlbtn = document.createElement("button");
+                dlbtn.innerText = "削除"
+                dlbtn.className ="deletebutton"
+                dlbtn.addEventListener("click", () => {
+                    if(confirm(li.textContent + "を削除しますか？")){
+                        QuizWord.splice(index, 1);
+                        showNotification("削除しました。");
+                        saveQWord();
+                        displayQList();
+                    }
+                })
+                li.appendChild(dlbtn);
+                QList.appendChild(li);
+            }
+            )
+        }
+        window.addEventListener("load", () => {
+            QuizWord = JSON.parse(localStorage.getItem("myQuizList"));
+            if(QuizWord === null){QuizWord = [];}
+            remainingWord = [...QuizWord];
+            displayQList();
+
+        })
+
+        function AnswerQ(){
+            const CA = coreAw.textContent;
+            const MA = myAw.value;
+            
+            if(MA === ""){
+                alert("回答が入力されていません。");
+                return;
+            }
+
+            const card = document.getElementById("myCard");
+
+            card.classList.toggle("isFlipped");
+
+            if(MA === CA){
+                laReMe.textContent = "◯正解！"
+                subReMe.textContent = "おめでとう！"
+                laReMe.style.color = "#2ecc71"
+                subReMe.style.color = "#2ecc71"
+                correctCount = correctCount + 1;
+            }else{
+                laReMe.textContent = "✕不正解..."
+                subReMe.textContent = "ざんねん"
+                laReMe.style.color = "#e74c3c"
+                subReMe.style.color = "#e74c3c"
+            }
+            scoreCount.textContent = correctCount;
+            resuOver.classList.remove("hidden");
+            setTimeout(() => {
+                resuOver.classList.add("hidden");
+                NextQuestion();
+                
+            }, 1500);
+        }
+
+        function saveQWord(){
+            localStorage.setItem("myQuizList", JSON.stringify(QuizWord));
+        }
+        function showNotification(message) {
+    const toast = document.getElementById("toast-container");
+    
+    // 通知の文字を書き換える
+    toast.textContent = message;
+    
+    // .show クラスをつけて画面上部に出現させる（フュッ！）
+    toast.classList.add("show");
+
+    // 2秒後（2000ミリ秒後）に自動で引っ込める
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+    </script>
+</body>
+</html>
