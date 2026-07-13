@@ -107,6 +107,7 @@
         background-color: #0a84ff;
         color: white;
         border-radius: 12px;
+        transition: all 0.2s ease;
     }
     @media (hover: hover) {
             button:hover:not(.selector-btn),button:active:not(.selector-btn){
@@ -180,11 +181,24 @@
         border: 2px solid #28a745;
         transform: scale(0.8);
     }
+    #soundChange{
+        position: fixed;
+        margin-right: auto;
+        top: 10px;
+        left: 10px;
+    }
+    #SEChangeBtn{
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+        background-color: white;
+        font-size: 24px;
+    }
     .toast{
         position: fixed;
-            top: -60px; /* 最初は画面の上の外側に隠しておく */
+            top: -120px; /* 最初は画面の上の外側に隠しておく */
             left: 50%;
-            transform: translateX(-50%); /* 画面の真ん中に配置 */
+            transform: translateX(-50%);/* 画面の真ん中に配置 */
             background-color: #333;
             color: #fff;
             padding: 12px 24px;
@@ -196,7 +210,7 @@
             transition: top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     }
     .toast.show {
-            top: 20px; /* 画面の上から20pxの位置まで下げる */
+            top: 20px;/* 画面の上から20pxの位置まで下げる */
         }
         .pwa-popup{
             display: none;
@@ -254,13 +268,16 @@ img{
     <div id="score-box">
         正解数: <span id="score-count">0</span>/ <span id="allQCount">0</span>問
     </div>
+    <div id="soundChange" class="soundChaBtn">
+        <button id="SEChangeBtn">🔊</button>
+    </div>
     <div id="toast-container" class="toast"></div>
     <div id="Ques">
         <p>この単語の日本語は何？</p>
     </div>
     
-    <div class="card-container" id="myCard">
-        <div class="card-inner">
+    <div class="card-container" id="AllCard">
+        <div class="card-inner" id="myCard">
             <div class="card-front" id="card-front"></div>
             <div class="card-back" id="correctAnswer"></div>
         </div>
@@ -289,6 +306,7 @@ img{
     </div>
     <footer>
         ※404というエラーが出てサイトが開けない場合は、<span class="mente">メンテナンス中</span>です。<br>
+        効果音素材：<a href="https://otologic.jp" target="_blank" rel="noopener noreferrer">OtoLogic</a></small>
         &copy; 2026 Harutim056 All Rights Reserved.
     </footer>
 
@@ -304,11 +322,27 @@ img{
         const scoreCount = document.getElementById("score-count");
         const scoreBox = document.getElementById("score-box");
         const QCount = document.getElementById("allQCount");
+        const SECBtn = document.getElementById("SEChangeBtn");
 
         let correctCount = 0;
         let QuizWord = [];
         let remainingWord = [];
         let currentWord = null;
+        let SE = 1;
+
+        SECBtn.addEventListener("click", () => {
+            if(SE === 1){
+                SE = 0;
+                SECBtn.textContent = "🔇";
+                SECBtn.style.backgroundColor = "#999";
+                showNotification("ミュートしました。")
+            }else if(SE === 0){
+                SE = 1;
+                SECBtn.textContent = "🔊";
+                SECBtn.style.backgroundColor = "white";
+                showNotification("ミュート解除しました。")
+            }
+        })
 
         document.addEventListener("DOMContentLoaded", function(){
         const popup = document.getElementById("pwa-popup");
@@ -329,6 +363,13 @@ img{
         })
     })
 
+        myAw.addEventListener("keydown", (ev) => {
+            if(ev.key === 'Enter'){
+                if(ev.isComposing){return;}
+                AnswerQ();
+            }
+        })
+
 
         document.getElementById("AddQuizBtn").addEventListener("click", () => {
             const NewEng = document.getElementById("QuizAddEng");
@@ -338,7 +379,7 @@ img{
             const Jap = NewJap.value.trim();
 
             if(Eng === ""||Jap === ""){
-                alert("英語か日本語のどちらかが未入力です。");
+                showNotification("英語か日本語のどちらかが未入力です。");
                 return;
             }
             QuizWord.push({
@@ -354,27 +395,28 @@ img{
 
         document.getElementById("QStart").addEventListener("click", () => {
             remainingWord = [...QuizWord];
-            const card = document.getElementById("myCard");
-            const QSBtn = document.getElementById("QStart");
-            document.getElementById("addadd").classList.add("hidden");
-            document.getElementById("AddQuizBtn").classList.add("hidden");
-            document.getElementById("title").classList.add("hidden");
-            QSBtn.classList.add("hidden")
-            QList.classList.add("hidden");
-            card.classList.remove("hidden");
-            scoreBox.classList.remove("hidden");
-            myAw.classList.remove("hidden");
-            awBtn.classList.remove("hidden");
-            Ques.classList.remove("hidden");
-
             correctCount = 0;
             QCount.textContent = QuizWord.length;
             NextQuestion();
+            setTimeout(() => {
+                const card = document.getElementById("AllCard");
+                const QSBtn = document.getElementById("QStart");
+                document.getElementById("addadd").classList.add("hidden");
+                document.getElementById("AddQuizBtn").classList.add("hidden");
+                document.getElementById("title").classList.add("hidden");
+                QSBtn.classList.add("hidden")
+                QList.classList.add("hidden");
+                card.classList.remove("hidden");
+                scoreBox.classList.remove("hidden");
+                myAw.classList.remove("hidden");
+                awBtn.classList.remove("hidden");
+                 Ques.classList.remove("hidden");
 
+            }, 200);
         })
 
         function NextQuestion() {
-            
+            const ClearSE = new Audio('clear.mp3');
             const card = document.getElementById("myCard");
             card.classList.remove("isFlipped");
             setTimeout(() => {
@@ -382,18 +424,25 @@ img{
                     if(correctCount === QuizWord.length){
                         showNotification("終了！全問正解！");
                         displayQList();
+                        if(SE === 1){
+                            ClearSE.play();
+                        }
                         return;
                     }
                     showNotification("終了！");
                     displayQList();
+                    if(SE === 1){
+                        ClearSE.play();
+                    }
                     return;
             }
             const randomIndex = Math.floor(Math.random() * remainingWord.length);
             currentWord = remainingWord[randomIndex];
+            console.log("asdfaqs", currentWord);
             document.getElementById("card-front").textContent = currentWord.english;
             coreAw.textContent = currentWord.japanese;
             remainingWord.splice(randomIndex, 1);
-            console.log("asjpda", remainingWord)
+            console.log("asjpda", remainingWord);
             myAw.value = "";
             }, 200);
             
@@ -401,7 +450,7 @@ img{
 
 
         function displayQList(){
-            const card = document.getElementById("myCard");
+            const card = document.getElementById("AllCard");
             const QSBtn = document.getElementById("QStart");
             document.getElementById("addadd").classList.remove("hidden");
             document.getElementById("AddQuizBtn").classList.remove("hidden");
@@ -450,7 +499,7 @@ img{
             const MA = myAw.value;
             
             if(MA === ""){
-                alert("回答が入力されていません。");
+                showNotification("回答が入力されていません。");
                 return;
             }
 
@@ -458,17 +507,26 @@ img{
 
             card.classList.toggle("isFlipped");
 
+            const CorrectSE = new Audio('correct.mp3');
+            const unCorrectSE = new Audio('uncorrect.mp3');
+
             if(MA === CA){
                 laReMe.textContent = "◯正解！"
                 subReMe.textContent = "おめでとう！"
                 laReMe.style.color = "#2ecc71"
                 subReMe.style.color = "#2ecc71"
+                if(SE === 1){
+                   CorrectSE.play(); 
+                }
                 correctCount = correctCount + 1;
             }else{
                 laReMe.textContent = "✕不正解..."
                 subReMe.textContent = "ざんねん"
                 laReMe.style.color = "#e74c3c"
                 subReMe.style.color = "#e74c3c"
+                if(SE === 1){
+                   unCorrectSE.play(); 
+                }
             }
             scoreCount.textContent = correctCount;
             resuOver.classList.remove("hidden");
@@ -494,7 +552,7 @@ img{
     // 2秒後（2000ミリ秒後）に自動で引っ込める
     setTimeout(() => {
         toast.classList.remove("show");
-    }, 2000);
+    }, 1500);
 }
     </script>
 </body>
