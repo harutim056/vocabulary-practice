@@ -364,7 +364,7 @@ img{
         })
     })
 
-        myAw.addEventListener("keydown", (ev) => {
+        myAw.addEventListener("keydown", function(ev) {
             if(ev.key === 'Enter'){
                 if(ev.isComposing){return;}
                 AnswerQ();
