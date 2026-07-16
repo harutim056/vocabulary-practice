@@ -421,7 +421,7 @@ img{
         function NextQuestion() {
             var ClearSE = new Audio('clear.mp3');
             var card = document.getElementById("myCard");
-            card.classList.remove("isFlipped");
+            
             setTimeout(function() {
                 if(remainingWord.length === 0){
                     if(correctCount === QuizWord.length){
@@ -535,6 +535,7 @@ img{
             resuOver.classList.remove("hidden");
             setTimeout(function() {
                 resuOver.classList.add("hidden");
+                card.classList.remove("isFlipped");
                 NextQuestion();
                 
             }, 1500);
