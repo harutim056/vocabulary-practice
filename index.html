@@ -376,8 +376,10 @@ img{
             var NewEng = document.getElementById("QuizAddEng");
             var NewJap = document.getElementById("QuizAddJap");
 
-            var Eng = NewEng.value.trim();
-            var Jap = NewJap.value.trim();
+            var Eng = NewEng.value;
+            var Jap = NewJap.value;
+            if (typeof Eng === 'string') Eng = Eng.replace(/^\s+|\s+$/g, '');
+            if (typeof Jap === 'string') Jap = Jap.replace(/^\s+|\s+$/g, '');
 
             if(Eng === ""||Jap === ""){
                 showNotification("英語か日本語のどちらかが未入力です。");
@@ -389,7 +391,7 @@ img{
             })
             NewEng.value = "";
             NewJap.value = "";
-            showNotification("追加しました")
+            showNotification("追加しました");
             saveQWord();
             displayQList();
         })
@@ -542,12 +544,13 @@ img{
             localStorage.setItem("myQuizList", JSON.stringify(QuizWord));
         }
         function showNotification(message) {
-    var toast = document.getElementById("toast-container");
-    
-    // 通知の文字を書き換える
-    toast.textContent = message;
-    
-    if(window.toastTimeout){
+            var toast = document.getElementById("toast-container");
+        toast.classList.remove("show");
+        toast.textContent = message;
+        toast.style.backgroundColor = "#333";
+        waitTime = 1500;
+
+        if(window.toastTimeout){
             setTimeout(function() {
             toast.classList.add("show");
             }, 40);
@@ -561,7 +564,7 @@ img{
         }
         window.toastTimeout = setTimeout(function(){
             toast.classList.remove("show");
-        }, 1500);
+        }, waitTime);
 }
     </script>
 </body>
