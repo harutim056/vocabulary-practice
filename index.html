@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -311,26 +312,26 @@ img{
     </footer>
 
     <script>
-        const Ques = document.getElementById("Ques");
-        const coreAw = document.getElementById("correctAnswer");
-        const myAw = document.getElementById("myAnswer");
-        const awBtn = document.getElementById("answerbutton");
-        const resuOver = document.getElementById("resultOverlay");
-        const laReMe = document.getElementById("largeResultMessage");
-        const subReMe = document.getElementById("subResultMessage");
-        const QList = document.getElementById("QuizList");
-        const scoreCount = document.getElementById("score-count");
-        const scoreBox = document.getElementById("score-box");
-        const QCount = document.getElementById("allQCount");
-        const SECBtn = document.getElementById("SEChangeBtn");
+        var Ques = document.getElementById("Ques");
+        var coreAw = document.getElementById("correctAnswer");
+        var myAw = document.getElementById("myAnswer");
+        var awBtn = document.getElementById("answerbutton");
+        var resuOver = document.getElementById("resultOverlay");
+        var laReMe = document.getElementById("largeResultMessage");
+        var subReMe = document.getElementById("subResultMessage");
+        var QList = document.getElementById("QuizList");
+        var scoreCount = document.getElementById("score-count");
+        var scoreBox = document.getElementById("score-box");
+        var QCount = document.getElementById("allQCount");
+        var SECBtn = document.getElementById("SEChangeBtn");
 
-        let correctCount = 0;
-        let QuizWord = [];
-        let remainingWord = [];
-        let currentWord = null;
-        let SE = 1;
+        var correctCount = 0;
+        var QuizWord = [];
+        var remainingWord = [];
+        var currentWord = null;
+        var SE = 1;
 
-        SECBtn.addEventListener("click", () => {
+        SECBtn.addEventListener("click", function() {
             if(SE === 1){
                 SE = 0;
                 SECBtn.textContent = "🔇";
@@ -345,12 +346,12 @@ img{
         })
 
         document.addEventListener("DOMContentLoaded", function(){
-        const popup = document.getElementById("pwa-popup");
-        const closeBtn = document.getElementById("close-popup");
+        var popup = document.getElementById("pwa-popup");
+        var closeBtn = document.getElementById("close-popup");
 
-        const isMobile = /iPhone|iPod|Android/i.test(navigator.userAgent);
+        var isMobile = /iPhone|iPod|Android/i.test(navigator.userAgent);
 
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         if(isMobile && !isStandalone){
             if(!localStorage.getItem("pwa_popup_closed")){
                 popup.classList.add("show");
@@ -371,12 +372,12 @@ img{
         })
 
 
-        document.getElementById("AddQuizBtn").addEventListener("click", () => {
-            const NewEng = document.getElementById("QuizAddEng");
-            const NewJap = document.getElementById("QuizAddJap");
+        document.getElementById("AddQuizBtn").addEventListener("click", function() {
+            var NewEng = document.getElementById("QuizAddEng");
+            var NewJap = document.getElementById("QuizAddJap");
 
-            const Eng = NewEng.value.trim();
-            const Jap = NewJap.value.trim();
+            var Eng = NewEng.value.trim();
+            var Jap = NewJap.value.trim();
 
             if(Eng === ""||Jap === ""){
                 showNotification("英語か日本語のどちらかが未入力です。");
@@ -393,14 +394,14 @@ img{
             displayQList();
         })
 
-        document.getElementById("QStart").addEventListener("click", () => {
+        document.getElementById("QStart").addEventListener("click", function() {
             remainingWord = [...QuizWord];
             correctCount = 0;
             QCount.textContent = QuizWord.length;
             NextQuestion();
-            setTimeout(() => {
-                const card = document.getElementById("AllCard");
-                const QSBtn = document.getElementById("QStart");
+            setTimeout(function() {
+                var card = document.getElementById("AllCard");
+                var QSBtn = document.getElementById("QStart");
                 document.getElementById("addadd").classList.add("hidden");
                 document.getElementById("AddQuizBtn").classList.add("hidden");
                 document.getElementById("title").classList.add("hidden");
@@ -416,10 +417,10 @@ img{
         })
 
         function NextQuestion() {
-            const ClearSE = new Audio('clear.mp3');
-            const card = document.getElementById("myCard");
+            var ClearSE = new Audio('clear.mp3');
+            var card = document.getElementById("myCard");
             card.classList.remove("isFlipped");
-            setTimeout(() => {
+            setTimeout(function() {
                 if(remainingWord.length === 0){
                     if(correctCount === QuizWord.length){
                         showNotification("終了！全問正解！");
@@ -436,7 +437,7 @@ img{
                     }
                     return;
             }
-            const randomIndex = Math.floor(Math.random() * remainingWord.length);
+            var randomIndex = Math.floor(Math.random() * remainingWord.length);
             currentWord = remainingWord[randomIndex];
             console.log("asdfaqs", currentWord);
             document.getElementById("card-front").textContent = currentWord.english;
@@ -450,8 +451,8 @@ img{
 
 
         function displayQList(){
-            const card = document.getElementById("AllCard");
-            const QSBtn = document.getElementById("QStart");
+            var card = document.getElementById("AllCard");
+            var QSBtn = document.getElementById("QStart");
             document.getElementById("addadd").classList.remove("hidden");
             document.getElementById("AddQuizBtn").classList.remove("hidden");
             document.getElementById("title").classList.remove("hidden");
@@ -466,14 +467,14 @@ img{
             QList.classList.remove("hidden")
 
             QuizWord.forEach((word, index) => {
-                const li = document.createElement("li");
+                var li = document.createElement("li");
                 
                 li.textContent = `${index + 1}. ${word.english}`;
                 li.setAttribute("data-index", index);
-                const dlbtn = document.createElement("button");
+                var dlbtn = document.createElement("button");
                 dlbtn.innerText = "削除"
                 dlbtn.className ="deletebutton"
-                dlbtn.addEventListener("click", () => {
+                dlbtn.addEventListener("click", function() {
                     if(confirm(li.textContent + "を削除しますか？")){
                         QuizWord.splice(index, 1);
                         showNotification("削除しました。");
@@ -486,7 +487,7 @@ img{
             }
             )
         }
-        window.addEventListener("load", () => {
+        window.addEventListener("load", function() {
             QuizWord = JSON.parse(localStorage.getItem("myQuizList"));
             if(QuizWord === null){QuizWord = [];}
             remainingWord = [...QuizWord];
@@ -495,20 +496,20 @@ img{
         })
 
         function AnswerQ(){
-            const CA = coreAw.textContent;
-            const MA = myAw.value;
+            var CA = coreAw.textContent;
+            var MA = myAw.value;
             
             if(MA === ""){
                 showNotification("回答が入力されていません。");
                 return;
             }
 
-            const card = document.getElementById("myCard");
+            var card = document.getElementById("myCard");
 
             card.classList.toggle("isFlipped");
 
-            const CorrectSE = new Audio('correct.mp3');
-            const unCorrectSE = new Audio('uncorrect.mp3');
+            var CorrectSE = new Audio('correct.mp3');
+            var unCorrectSE = new Audio('uncorrect.mp3');
 
             if(MA === CA){
                 laReMe.textContent = "◯正解！"
@@ -530,7 +531,7 @@ img{
             }
             scoreCount.textContent = correctCount;
             resuOver.classList.remove("hidden");
-            setTimeout(() => {
+            setTimeout(function() {
                 resuOver.classList.add("hidden");
                 NextQuestion();
                 
@@ -541,18 +542,26 @@ img{
             localStorage.setItem("myQuizList", JSON.stringify(QuizWord));
         }
         function showNotification(message) {
-    const toast = document.getElementById("toast-container");
+    var toast = document.getElementById("toast-container");
     
     // 通知の文字を書き換える
     toast.textContent = message;
     
-    // .show クラスをつけて画面上部に出現させる（フュッ！）
-    toast.classList.add("show");
-
-    // 2秒後（2000ミリ秒後）に自動で引っ込める
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 1500);
+    if(window.toastTimeout){
+            setTimeout(function() {
+            toast.classList.add("show");
+            }, 40);
+        }else{
+            toast.classList.add("show");
+        }
+        
+        
+        if (window.toastTimeout) {
+            clearTimeout(window.toastTimeout);
+        }
+        window.toastTimeout = setTimeout(function(){
+            toast.classList.remove("show");
+        }, 1500);
 }
     </script>
 </body>
