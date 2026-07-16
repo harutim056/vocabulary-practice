@@ -397,7 +397,7 @@ img{
         })
 
         document.getElementById("QStart").addEventListener("click", function() {
-            remainingWord = [...QuizWord];
+            remainingWord = QuizWord.slice(0);
             correctCount = 0;
             QCount.textContent = QuizWord.length;
             NextQuestion();
@@ -468,10 +468,10 @@ img{
             QList.innerHTML = "";
             QList.classList.remove("hidden")
 
-            QuizWord.forEach((word, index) => {
+            QuizWord.forEach(function(word, index) {
                 var li = document.createElement("li");
                 
-                li.textContent = `${index + 1}. ${word.english}`;
+                li.textContent = (index + 1) + ". " + word.english;
                 li.setAttribute("data-index", index);
                 var dlbtn = document.createElement("button");
                 dlbtn.innerText = "削除"
@@ -492,10 +492,10 @@ img{
         window.addEventListener("load", function() {
             QuizWord = JSON.parse(localStorage.getItem("myQuizList"));
             if(QuizWord === null){QuizWord = [];}
-            remainingWord = [...QuizWord];
+            remainingWord = QuizWord.slice(0);
             displayQList();
 
-        })
+        });
 
         function AnswerQ(){
             var CA = coreAw.textContent;
