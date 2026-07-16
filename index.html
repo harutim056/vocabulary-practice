@@ -137,8 +137,14 @@
         border-radius: 12px;
         transition: all 0.2s ease;
     }
+    button:disabled{
+        background-color: #cccccc;
+        color: #666666;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
     @media (hover: hover) {
-            button:hover:not(.selector-btn),button:active:not(.selector-btn){
+            button:hover:not(:disabled){
             border: 2.5px solid rgb(220, 50, 50);
             box-shadow: 0 0 12px rgb(220, 50, 50);
             transform: scale(1.04);
@@ -321,7 +327,7 @@ img{
 
     <div id="addadd">
         <h3>新しい単語を追加しよう</h3>
-        <input type="text" id="QuizAddEng" placeholder="追加する問題を入力(英語)">
+        <input type="url" id="QuizAddEng" autocomplete="off" autocapitalize="off" placeholder="追加する問題を入力(英語)">
         <input type="text" id="QuizAddJap" placeholder="追加する問題を入力(日本語、ひらがなで)"><br>
         
     </div>
@@ -351,13 +357,63 @@ img{
         var scoreBox = document.getElementById("score-box");
         var QCount = document.getElementById("allQCount");
         var SECBtn = document.getElementById("SEChangeBtn");
+        var NewEng = document.getElementById("QuizAddEng");
+        var NewJap = document.getElementById("QuizAddJap");
+        var addQBtn = document.getElementById("AddQuizBtn");
+        var QST = document.getElementById("QStart");
 
         var correctCount = 0;
         var QuizWord = [];
         var remainingWord = [];
         var currentWord = null;
         var SE = 1;
+        var isComposing = false;
+        var elements = [NewJap, myAw];
 
+// 3. 変換中かどうかを管理する「オブジェクト（連想配列）」を用意
+// 各入力欄のIDをキーにして、それぞれの変換状態（true/false）を個別に管理します
+var composingStates = {};
+
+// 4. 【要素のループ】×【イベントのループ】で一気に登録！
+elements.forEach(function(el) {
+    // 初期状態はすべて「変換中ではない（false）」にしておく
+    composingStates[el.id] = false;
+
+    // 監視したいイベント名を配列にしてループを回す
+    ['input', 'compositionstart', 'compositionend'].forEach(function(eventType) {
+        el.addEventListener(eventType, function(e) {
+            
+            // イベントの種類（type）に応じて処理を分岐
+            if (e.type === 'compositionstart') {
+                composingStates[this.id] = true; // 変換開始
+            } 
+            else if (e.type === 'compositionend') {
+                composingStates[this.id] = false; // 変換終了
+                filterHiragana(this); // 確定直後のチェック
+            } 
+            else if (e.type === 'input') {
+                // 変換中でない（false）ときだけ、ひらがな以外を消去
+                if (!composingStates[this.id]) {
+                    filterHiragana(this);
+                }
+            }
+            
+        });
+    });
+});
+
+// ひらがな以外を消去する共通の処理
+function filterHiragana(element) {
+    element.value = element.value.replace(/[^ぁ-んー]/g, '');
+}
+
+        NewEng.addEventListener("input", function(){
+            var value = this.value;
+            value = value.replace(/[^A-Za-z]/g, '');
+            this.value = value;
+        })
+
+        
         SECBtn.addEventListener("click", function() {
             if(SE === 1){
                 SE = 0;
@@ -397,12 +453,36 @@ img{
                 AnswerQ();
             }
         })
-
-
-        document.getElementById("AddQuizBtn").addEventListener("click", function() {
-            var NewEng = document.getElementById("QuizAddEng");
-            var NewJap = document.getElementById("QuizAddJap");
-
+        checkQadd()
+        function checkQadd(){
+            var Eng = NewEng.value;
+            var Jap = NewJap.value;
+            if(Eng === ""||Jap === ""){
+                addQBtn.disabled = true;
+            }else{
+                addQBtn.disabled = false;
+            }
+            requestAnimationFrame(checkQadd);
+        }
+        checkQW()
+        function checkQW(){
+            if(QuizWord.length === 0){
+                QST.disabled = true;
+            }else{
+                QST.disabled = false;
+            }
+            requestAnimationFrame(checkQW);
+        }
+        checkmyAw()
+        function checkmyAw(){
+            if(myAw.value === ""){
+                awBtn.disabled = true;
+            }else{
+                awBtn.disabled = false;
+            }
+            requestAnimationFrame(checkmyAw);
+        }
+        addQBtn.addEventListener("click", function() {
             var Eng = NewEng.value;
             var Jap = NewJap.value;
             if (typeof Eng === 'string') Eng = Eng.replace(/^\s+|\s+$/g, '');
@@ -423,7 +503,7 @@ img{
             displayQList();
         })
 
-        document.getElementById("QStart").addEventListener("click", function() {
+        QST.addEventListener("click", function() {
             remainingWord = QuizWord.slice(0);
             correctCount = 0;
             QCount.textContent = QuizWord.length;
