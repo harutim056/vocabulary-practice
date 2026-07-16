@@ -392,6 +392,9 @@ elements.forEach(function(el) {
                 filterHiragana(this); // 確定直後のチェック
             } 
             else if (e.type === 'input') {
+                if(!e.isComposing){
+                    return;
+                }
                 // 変換中でない（false）ときだけ、ひらがな以外を消去
                 if (!composingStates[this.id]) {
                     filterHiragana(this);
