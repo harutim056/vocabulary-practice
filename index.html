@@ -33,7 +33,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
         }
 
-    body,button,input,ul,h1,p,div{
+    body,button,input,ul,h1,p,div,select{
             font-family: 'M PLUS Rounded 1c', sans-serif;
         }
     body{
@@ -296,6 +296,21 @@ img{
             height: 1em;
             vertical-align: bottom;
         }
+        #modeselect{
+            width: 250px;           /* 画面幅いっぱいに広げる（お好みで調整） */
+            height: 65px;      /* 横に広がりすぎないように制限 */
+            padding: 12px 40px 12px 16px; /* 内側の余白（右側に矢印用の広めの隙間を作る） */
+            font-size: 16px;       /* iPhoneでタップした時に画面が勝手にズームされるのを防ぐ絶妙なサイズ */
+            border: 2px solid #e0e0e0; /* 優しい薄グレーの枠線 */
+            border-radius: 8px;    /* 角を少し丸くして今風にする */
+            background-color: #ffffff; /* 背景はクッキリ白 */
+            color: #333333;     
+            font-size: 18px;
+            margin-bottom: 50px;   /* 文字は少し落ち着いた黒 */
+            /* 4. タップした時などのアニメーションを滑らかにする */
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 </style>
 <body>
     <h1 id="title">単語学習サイト</h1>
@@ -322,7 +337,10 @@ img{
         <div id="largeResultMessage"></div>
         <div id="subResultMessage"></div>
     </div>
-    
+    <select name="" id="modeselect">
+        <option value="EngJap">English => 日本語</option>
+        <option value="JapEng">日本語 => English</option>
+    </select>
     <button id="QStart" style="width: 150px;">クイズスタート！</button>
 
     <div id="addadd">
@@ -361,6 +379,7 @@ img{
         var NewJap = document.getElementById("QuizAddJap");
         var addQBtn = document.getElementById("AddQuizBtn");
         var QST = document.getElementById("QStart");
+        var modeSel = document.getElementById("modeselect");
 
         var correctCount = 0;
         var QuizWord = [];
@@ -376,6 +395,9 @@ var composingStates = {};
 
 // 4. 【要素のループ】×【イベントのループ】で一気に登録！
 elements.forEach(function(el) {
+    if(modeSel.value === "JapEng"){
+        elements = [NewJap];
+    }
     // 初期状態はすべて「変換中ではない（false）」にしておく
     composingStates[el.id] = false;
 
@@ -415,7 +437,14 @@ function filterHiragana(element) {
             value = value.replace(/[^A-Za-z]/g, '');
             this.value = value;
         })
-
+        myAw.addEventListener("input", function(){
+            if(modeSel.value === "JapEng"){
+                var value = this.value;
+                value = value.replace(/[^A-Za-z]/g, '');
+                this.value = value;
+            }
+            
+        })
         
         SECBtn.addEventListener("click", function() {
             if(SE === 1){
@@ -524,6 +553,7 @@ function filterHiragana(element) {
                 myAw.classList.remove("hidden");
                 awBtn.classList.remove("hidden");
                  Ques.classList.remove("hidden");
+                 modeSel.classList.add("hidden");
 
             }, 200);
         })
@@ -552,8 +582,13 @@ function filterHiragana(element) {
             var randomIndex = Math.floor(Math.random() * remainingWord.length);
             currentWord = remainingWord[randomIndex];
             console.log("asdfaqs", currentWord);
-            document.getElementById("card-front").textContent = currentWord.english;
-            coreAw.textContent = currentWord.japanese;
+            if(modeSel.value === "EngJap"){
+                document.getElementById("card-front").textContent = currentWord.english;
+                coreAw.textContent = currentWord.japanese;
+            }else{
+                document.getElementById("card-front").textContent = currentWord.japanese;
+                coreAw.textContent = currentWord.english;
+            }
             remainingWord.splice(randomIndex, 1);
             console.log("asjpda", remainingWord);
             myAw.value = "";
@@ -576,7 +611,8 @@ function filterHiragana(element) {
             Ques.classList.add("hidden");
             scoreBox.classList.add("hidden");
             QList.innerHTML = "";
-            QList.classList.remove("hidden")
+            QList.classList.remove("hidden");
+            modeSel.classList.remove("hidden");
 
             QuizWord.forEach(function(word, index) {
                 var li = document.createElement("li");
